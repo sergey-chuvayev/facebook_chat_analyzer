@@ -26,9 +26,16 @@ class Parser
 			name = message.children().css('.user').text
 			date = DateTime.parse(message.children().css('.meta').text).strftime('%Y-%m-%d %H:%M:%S')
 
-			if db.execute('SELECT * FROM messages WHERE messages.date = ?', date).empty?
-				db.execute("INSERT INTO messages (name, message, date) 
-					VALUES (?, ?, ?);", name, message_text, date)
+			if db.execute('SELECT * FROM users WHERE users.name = ?', name).empty?
+				db.execute("INSERT INTO users (name) 
+					VALUES (?);", name)
+			end
+
+			user_id = db.execute('SELECT id FROM users WHERE users.name = ?', name)
+			if db.execute('SELECT * FROM messages WHERE messages.message = ? AND messages.date = ?', message_text, date).empty?
+				db.execute("INSERT INTO messages (user_id, message, date) 
+					VALUES (?, ?, ?);", user_id, message_text, date)
+
 				print "Processing message #{i+1}"
 				print "\r"
 			end
