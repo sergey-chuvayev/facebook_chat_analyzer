@@ -10,9 +10,9 @@ class Analyser
 		collection.each do |c|
 			out_str += "#{c[:user]}: #{c[:count]}\n"
 		end
-		# min_date = @db.execute("SELECT MIN(date) FROM messages;")
-		# max_date = @db.execute("SELECT MAX(date) FROM messages;")
-		# out_str = "From #{min_date} To #{max_date} \n #{out_str}"
+		min_date = @db.execute("SELECT MIN(date) FROM messages;")[0][0]
+		max_date = @db.execute("SELECT MAX(date) FROM messages;")[0][0]
+		out_str = "From #{min_date} To #{max_date} \n#{out_str}"
 		return out_str
 	end
 
@@ -31,4 +31,4 @@ class Analyser
 
 end
 
-p Analyser.output
+puts Analyser.output
