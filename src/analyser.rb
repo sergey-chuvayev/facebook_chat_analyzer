@@ -7,7 +7,7 @@ class Analyser
 	def self.main
 		str = ""
 		words_rating.each do |words|
-			str += "#{words[:name][0][0]}: #{words[:count]}\n"
+			str += "#{words[:name][0][0]}: #{words[:bad_word]}\n"
 		end
 		min_date = get_min_max('MIN')
 		max_date = get_min_max('MAX')
@@ -29,7 +29,7 @@ class Analyser
 	end
 
 	def self.get_min_max(minormax)
-		return DateTime.parse(@db.execute("SELECT #{minormax}(date) FROM messages;")[0][0]).strftime('%D')
+		return DateTime.parse(@db.execute("SELECT #{minormax}(date) FROM messages;")[0][0]).strftime('%d-%m-%Y')
 	end
 
 	def self.messages_rating
@@ -50,10 +50,18 @@ class Analyser
 			messages = @db.execute("SELECT * FROM messages WHERE messages.user_id = #{user[0]}")
 			messages.each do |message|
 				name = @db.execute("SELECT name FROM users WHERE users.id = #{message[1]}")
-				one_message_count = message[3].split(' ').count
+				one_message = message[3].split('')
+				bad_word = 0
+				one_message.each do |word|
+					if word.downcase.include?('хуй') or word.downcase.include?('хуе') or word.downcase.include?('хуя')
+						bad_word += 1
+					end
+				end
+
 				collection << {
 					name: name,
-					count: one_message_count
+					count: one_message.count,
+					bad_word: bad_word
 				}
 			end
 		end
@@ -66,6 +74,7 @@ class Analyser
 				end
 				if collection[j][:name] == collection[i][:name]
 					collection[j][:count] += collection[i][:count]
+					collection[j][:bad_word] += collection[i][:bad_word]
 					collection.delete_at(i)
 				else
 					i+=1
@@ -73,7 +82,7 @@ class Analyser
 			end
 		end
 
-		return collection.sort_by {|obj| obj[:count]}.reverse
+		return collection.sort_by {|obj| obj[:bad_word]}.reverse
 	end
 
 end
